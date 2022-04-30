@@ -1,0 +1,38 @@
+{
+  "name": "@sjmeverett/cfn-types",
+  "description": "CloudFormation in typescript instead of JSON/YAML",
+  "version": "0.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "Stewart Everett (https://stewarteverett.com)",
+  "scripts": {
+    "download": "curl --compressed https://d1uauaxba7bl26.cloudfront.net/latest/gzip/CloudFormationResourceSpecification.json -o ./src/spec.json",
+    "generate": "ts-node generate.ts",
+    "build-ts": "tsc",
+    "build": "mkdir -p src && npm run download && npm run generate && npm run build-ts",
+    "clean": "rm -rf src dist",
+    "postversion": "git push --follow-tags"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "devDependencies": {
+    "@types/node": "^13.13.52",
+    "handlebars": "^4.7.7",
+    "ts-node": "^8.10.2",
+    "typescript": "^4.6.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sjmeverett/cfn-types.git"
+  },
+  "keywords": [
+    "cloudformation",
+    "deployment"
+  ],
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sjmeverett/cfn-types/issues"
+  },
+  "homepage": "https://github.com/sjmeverett/cfn-types#readme"
+}
