@@ -121,7 +121,7 @@ export function isAsset(obj: any): obj is Asset {
   return obj?.kind === 'asset';
 }
 
-export type StackItem = Resource | Asset;
+export type StackItem = Resource | Asset | Parameter;
 
 /**
  * Gets the Resources map for your CloudFormation template from an array of resources.
@@ -159,29 +159,74 @@ export function getResource(resource: Resource) {
  * @returns only the assets, deduplicated by key
  */
 export function getAssets(stack: StackItem[]) {
-  return uniqBy(stack.filter(isAsset), (x) => x.key);
-}
-
-function uniqBy<T>(items: T[], predicate: (item: T) => string) {
-  const result: Record<string, T> = {};
-
-  items.forEach((item) => {
-    result[predicate(item)] = item;
-  });
-
-  return Object.values(result);
+  return stack.filter(isAsset);
 }
 
 /**
- * Gets the CloudFormation JSON for a given set of resources
+ * Represents a CloudFormation parameter.
+ */
+export interface Parameter {
+  kind: 'parameter';
+  name: string;
+  type: string;
+  default?: string;
+}
+
+/**
+ * Creates a parameter.
+ * @param name the name to give the parameter
+ * @param type the parameter type, defaults to String
+ * @param defaultValue optionally, the default value
+ * @returns
+ */
+export function createParameter(
+  name: string,
+  type = 'String',
+  defaultValue?: string,
+): Parameter {
+  return {
+    kind: 'parameter',
+    name,
+    type,
+    default: defaultValue,
+  };
+}
+
+/**
+ * Returns true if the given object is a Parameter.
+ * @param obj the object to test
+ */
+export function isParameter(obj: any): obj is Parameter {
+  return obj?.kind === 'parameter';
+}
+
+/**
+ * Returns just the parameters from the stack.
+ */
+export function getParameters(stack: StackItem[]) {
+  const result: Record<string, { Type: string; Default?: string }> = {};
+
+  stack.filter(isParameter).forEach((parameter) => {
+    result[parameter.name] = {
+      Type: parameter.type,
+      Default: parameter.default,
+    };
+  });
+
+  return result;
+}
+
+/**
+ * Gets the CloudFormation object for a given set of resources
  * @param stack the set of resources to generate JSON for
- * @returns the CloudFormation JSON as a string
+ * @returns the CloudFormation object
  */
 export function getTemplate(stack: StackItem[]) {
   return JSON.stringify(
     {
       AWSTemplateFormatVersion: '2010-09-09',
       Resources: getResources(stack),
+      Parameters: getParameters(stack),
     },
     null,
     2,
